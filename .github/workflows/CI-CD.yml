@@ -30,7 +30,7 @@ jobs:
       # Build the Docker image for the website
       - name: Build Docker image for Static Website
         run: |
-          docker build -t my-static-website:latest .
+          docker build -f ./docker/Dockerfile -t my-static-website:latest .
 
       # Push the Docker image to Docker Hub (or any registry you're using)
       - name: Push Docker image to Docker Hub
