@@ -27,10 +27,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: List files in the directory
+        run: ls -al
+
       # Build the Docker image for the website
       - name: Build Docker image for Static Website
         run: |
-          docker build -f Dockerfile -t my-static-website:latest .
+          docker build -f ./docker/Dockerfile -t my-static-website:latest .
 
       # Push the Docker image to Docker Hub (or any registry you're using)
       - name: Push Docker image to Docker Hub
