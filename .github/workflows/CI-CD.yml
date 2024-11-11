@@ -79,8 +79,8 @@ jobs:
             --become
             --become-method=sudo
             --become-user=root
+            -vvvv
           sudo: true
-          verbose: true
 
       # Clean up after deployment
       - name: Clean up
