@@ -6,13 +6,26 @@
       apt:
         update_cache: yes
         force_apt_get: yes
+        cache_valid_time: 3600  # Only update if cache is older than 1 hour
 
-    - name: Install Docker
+    - name: Install required packages
       apt:
-        name: docker.io
+        name: "{{ item }}"
         state: present
+        update_cache: no  # Already updated above
+      loop:
+        - docker.io
+        - docker-compose
+        - python3-pip  # Often needed for Docker SDK
 
-    - name: Install Docker Compose
-      apt:
-        name: docker-compose
-        state: present
+    - name: Ensure Docker service is started and enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
