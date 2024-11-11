@@ -1,5 +1,6 @@
 - name: Setup environment for deployment
   hosts: localhost
+  become: true
   tasks:
     - name: Update apt packages
       apt:
