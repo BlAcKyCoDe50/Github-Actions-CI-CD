@@ -1,5 +1,4 @@
 name: CI/CD Pipeline for Static Website
-
 on:
   push:
     paths:
@@ -12,11 +11,21 @@ jobs:
     runs-on: self-hosted
     
     steps:
+      # Initial system setup and permissions
+      - name: Initial system setup
+        run: |
+          sudo rm -f /var/lib/apt/lists/lock
+          sudo rm -f /var/lib/dpkg/lock
+          sudo rm -f /var/lib/dpkg/lock-frontend
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+
       # Add Docker permissions step
       - name: Setup Docker permissions
         run: |
           sudo chmod 666 /var/run/docker.sock
           sudo usermod -aG docker $USER
+          sudo systemctl restart docker || true
           
       - name: Checkout code
         uses: actions/checkout@v3
@@ -54,6 +63,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           
+      # Install Ansible dependencies
+      - name: Install Ansible dependencies
+        run: |
+          sudo apt-add-repository --yes --update ppa:ansible/ansible
+          sudo apt-get install -y ansible
+          
       # Run Ansible Playbook
       - name: Run Ansible Playbook for Deployment
         uses: dawidd6/action-ansible-playbook@v2
@@ -63,9 +78,28 @@ jobs:
           options: |
             --become
             --become-method=sudo
+            --become-user=root
           sudo: true
+          verbose: true
 
+      # Clean up after deployment
+      - name: Clean up
+        if: always()
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+      # Notify on failure
       - name: Notify on failure
         if: failure()
         run: |
           echo "Workflow failed! Check the logs for more details."
+          # Add your notification commands here (e.g., email, Slack)
+
+      # Verify deployment
+      - name: Verify deployment
+        if: success()
+        run: |
+          echo "Verifying deployment..."
+          docker ps
+          systemctl status docker || true
