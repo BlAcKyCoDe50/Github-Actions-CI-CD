@@ -8,8 +8,13 @@ on:
 
 jobs:
   build-deploy:
+<<<<<<< HEAD
     runs-on: self-hosted
     
+=======
+    runs-on: ubuntu
+
+>>>>>>> 246eee8 (updated Pipeline 25)
     steps:
       # Initial system setup and permissions
       - name: Initial system setup
