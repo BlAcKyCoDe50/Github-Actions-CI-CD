@@ -1,38 +1,60 @@
 ---
-- name: Setup environment for deployment
-  hosts: localhost
-  become: true
+- hosts: localhost
+  become: true  # Run with sudo privileges
+  become_user: root
   tasks:
-    - name: Kill any other apt processes
-      command: sudo killall -q apt apt-get
+    # Remove any apt locks
+    - name: Ensure no apt lock exists
+      file:
+        path: /var/lib/apt/lists/lock
+        state: absent
       ignore_errors: yes
-    
+
+    - name: Ensure no apt lock exists for dpkg
+      file:
+        path: /var/lib/dpkg/lock
+        state: absent
+      ignore_errors: yes
+
+    - name: Ensure no apt lock exists for dpkg-frontend
+      file:
+        path: /var/lib/dpkg/lock-frontend
+        state: absent
+      ignore_errors: yes
+
     - name: Wait for lock release
       command: sleep 5
 
-    - name: Update apt sources
+    # Configure apt sources correctly
+    - name: Configure apt repositories
       copy:
-        dest: /etc/apt/sources.list.d/ubuntu.list
+        dest: /etc/apt/sources.list
         content: |
-          deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy main restricted
-          deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy-updates main restricted
-          deb http://security.ubuntu.com/ubuntu jammy-security main restricted
+          deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
+          deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
+          deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+          deb http://security.ubuntu.com/ubuntu jammy-security main restricted universe multiverse
+        mode: '0644'
 
-    - name: Update apt list
+    - name: Clean apt cache
+      command: apt-get clean
+
+    - name: Update apt packages
       apt:
         update_cache: yes
-        force_apt_get: yes
-        cache_valid_time: 3600  # Only update if cache is older than 1 hour
+        upgrade: dist
+        cache_valid_time: 3600
+      register: apt_update_result
 
     - name: Install required packages
       apt:
         name: "{{ item }}"
         state: present
-        update_cache: no  # Cache was updated above
+        update_cache: no
       loop:
         - docker.io
         - docker-compose
-        - python3-pip  # Required for Docker SDK
+        - python3-pip
 
     - name: Ensure Docker service is started and enabled
       service:
@@ -40,14 +62,8 @@
         state: started
         enabled: yes
 
-    # - name: Add current user to docker group
-    #   user:
-    #     name: "{{ ansible_user }}"
-    #     groups: docker
-    #     append: yes
-      - name: Add current user to docker group
-        ansible.builtin.user:
-          name: "{{ ansible_user | default('ubuntu') }}"
-          groups: docker
-        become: yes
-
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_user | default('ubuntu') }}"
+        groups: docker
+        append: yes
