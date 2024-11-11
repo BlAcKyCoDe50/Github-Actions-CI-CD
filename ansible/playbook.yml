@@ -1,3 +1,4 @@
+---
 - name: Setup environment for deployment
   hosts: localhost
   become: true
@@ -10,7 +11,7 @@
           deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy-updates main restricted
           deb http://security.ubuntu.com/ubuntu jammy-security main restricted
 
-    - name: Update apt packages
+    - name: Update apt list
       apt:
         update_cache: yes
         force_apt_get: yes
@@ -20,11 +21,11 @@
       apt:
         name: "{{ item }}"
         state: present
-        update_cache: no  # Already updated above
+        update_cache: no  # Cache was updated above
       loop:
         - docker.io
         - docker-compose
-        - python3-pip  # Often needed for Docker SDK
+        - python3-pip  # Required for Docker SDK
 
     - name: Ensure Docker service is started and enabled
       service:
