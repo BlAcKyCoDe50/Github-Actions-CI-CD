@@ -1,6 +1,5 @@
 name: CI/CD Pipeline for Static Website
 
-# Trigger the workflow only when changes are pushed to the 'src' folder
 on:
   push:
     paths:
@@ -13,27 +12,34 @@ jobs:
     runs-on: self-hosted
     
     steps:
+      # Add Docker permissions step
+      - name: Setup Docker permissions
+        run: |
+          sudo chmod 666 /var/run/docker.sock
+          sudo usermod -aG docker $USER
+          
       - name: Checkout code
-        uses: actions/checkout@v3  # Updated to v3
-        
+        uses: actions/checkout@v3
+
       # Set up Docker Buildx for advanced Docker features
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-        
-      # Log in to Docker Hub (or any registry you are using)
+        with:
+          install: true
+          
+      # Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           
-      # List files in the directory to confirm correct path
       - name: List files in the directory
         run: ls -al
         
       # Build and push Docker image using Buildx
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4  # Using the official Docker build-push action
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
@@ -44,11 +50,11 @@ jobs:
           
       # Set up SSH for Ansible deployment
       - name: Set up SSH for Ansible
-        uses: webfactory/ssh-agent@v0.8.0  # Updated to latest version
+        uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           
-      # Run the Ansible Playbook to deploy the static website
+      # Run Ansible Playbook
       - name: Run Ansible Playbook for Deployment
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -57,11 +63,9 @@ jobs:
           options: |
             --become
             --become-method=sudo
-          sudo: true  # Added sudo permission
+          sudo: true
 
-      # Add error notification (optional but recommended)
       - name: Notify on failure
         if: failure()
         run: |
           echo "Workflow failed! Check the logs for more details."
-          # You can add more notification methods here (e.g., email, Slack)
