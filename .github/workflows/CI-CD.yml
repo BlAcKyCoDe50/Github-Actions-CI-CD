@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-deploy:
-    runs-on: ubuntu
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
