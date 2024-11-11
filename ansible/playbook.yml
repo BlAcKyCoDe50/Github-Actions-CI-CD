@@ -2,6 +2,14 @@
   hosts: localhost
   become: true
   tasks:
+    - name: Update apt sources
+      copy:
+        dest: /etc/apt/sources.list.d/ubuntu.list
+        content: |
+          deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy main restricted
+          deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ jammy-updates main restricted
+          deb http://security.ubuntu.com/ubuntu jammy-security main restricted
+
     - name: Update apt packages
       apt:
         update_cache: yes
