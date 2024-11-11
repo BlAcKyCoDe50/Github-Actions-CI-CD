@@ -46,10 +46,3 @@
         groups: docker
         append: yes
 
-
-- name: Run ansible playbook
-  uses: dawidd6/action-ansible-playbook@v2
-  with:
-    inventory: ansible/inventory
-    playbook: ansible/playbook.yml
-    extra_args: '--become --become-user root'
