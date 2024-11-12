@@ -45,6 +45,10 @@ jobs:
           
       - name: List files in the directory
         run: ls -al
+      
+      - name: Remove existing container if exists
+        run: |
+          docker rm -f my-static-website || true
         
       # Build and push Docker image using Buildx
       - name: Build and push Docker image
