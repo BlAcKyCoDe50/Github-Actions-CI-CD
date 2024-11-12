@@ -82,6 +82,11 @@ jobs:
             -vvvv
           sudo: true
 
+      - name: Pull Docker image from Docker Hub
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/my-static-website:latest
+
+
       # Clean up after deployment
       - name: Clean up
         if: always()
