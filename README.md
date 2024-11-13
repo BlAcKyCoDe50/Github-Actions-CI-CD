@@ -21,10 +21,10 @@ This project sets up a Continuous Integration/Continuous Deployment (CI/CD) pipe
 
    #### Test Stage:
    - Github-Actions runs tests on the Docker container to validate the code.
-   - If tests pass, the pipeline continues; otherwise, Jenkins marks the build as failed.
+   - If tests pass, the pipeline continues; otherwise, Github-Actions marks the build as failed.
 
    #### Deployment Stage:
-   - Jenkins uses Ansible to deploy the Docker container to the production server.
+   - Github-Actions uses Ansible to deploy the Docker container to the production server.
    - Ansible connects to the production server, pulls the latest Docker image, and starts the container.
 
    #### Production:
@@ -58,9 +58,9 @@ This project sets up a Continuous Integration/Continuous Deployment (CI/CD) pipe
 
 ### Prerequisites
 
-- Docker installed on build and production servers.
+- Docker installed on AWS EC2 server.
 - Must have knowledge of Github-actions with access to the GitHub repository and Docker.
-- Ansible installed on the Jenkins server for deployment to production.
+- Ansible installed on AWS EC2 instance  for deployment to production.
 
 ### Steps
 
